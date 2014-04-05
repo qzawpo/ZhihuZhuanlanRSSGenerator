@@ -8,9 +8,18 @@
 	
 	$column_id = $_GET["columnid"];
 	
+	$require_full = $_GET["full"];
+	
 	$summary = GetSummary($column_id);
 	
-	$posts = GetRecentItems($column_id);
+	// Full or not?
+	if($require_full == 1){
+	   $posts = GetPostsSpecific($column_id, $summary -> postsCount, 0);
+	}
+	else{
+	   $posts = GetRecentItems($column_id);
+	}
+	
 	
 	$dom = new DOMDocument('1.0','utf-8');
 	
@@ -66,6 +75,8 @@
 	$generator -> appendChild($dom->createTextNode('http://imbushuo.net/archives/17'));
 	$channel -> appendChild($generator);
 	
+	$firstflag = 0;
+	
 	if($posts!=null)
 	{
 	// Posts
@@ -82,6 +93,13 @@
 		$pubDate = new DateTime( $article -> publishedTime);
 		$publishedTime -> appendChild($dom->createTextNode($pubDate -> format('D, d M Y H:i:s O')));
 		$item -> appendChild($publishedTime);
+		if($firstflag == 0){
+		    $recentupdatetime = $pubDate -> format('D, d M Y H:i:s O');
+			$recentupdatetimenode = $dom -> createElement('lastBuildDate');
+	        $recentupdatetimenode -> appendChild($dom->createTextNode($recentupdatetime));
+	        $channel -> appendChild($recentupdatetimenode);
+			$firstflag = 1;
+		}
 		
 		$summary = $dom -> createElement('description');
 		$summary -> appendChild($dom->createCDATASection($article -> summary));
@@ -99,8 +117,17 @@
 		$author -> appendChild($dom->createTextNode($article -> author -> name));
 		$item -> appendChild($author);
 		
+		$feautredimage = $article -> titleImage;
+		
+		if(titleImage!=""){
+		   $contenthtml = '<img src="'.$feautredimage.'">'.$article -> content;
+		}
+		else{
+		   $contenthtml = $article -> content;
+		}
+		
 		$content = $dom -> createElement('content:encoded');
-		$content -> appendChild($dom->createCDATASection($article -> content));
+		$content -> appendChild($dom->createCDATASection($contenthtml));
 		$item -> appendChild($content);
 		
 		$channel -> appendChild($item);

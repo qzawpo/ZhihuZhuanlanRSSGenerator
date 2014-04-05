@@ -42,11 +42,18 @@
 		
 		return null;
 	 }
-	
+	 
 	 function GetRecentItems($column_id){
 	    // Get Recent Items
+	    return GetPostsSpecific($column_id,10,0);
+	 }
+
+	 function GetPostsSpecific($column_id,$limit,$offset){
 	    if($column_id=='' || $column_id == null) return null;
-	    $urlbase = 'http://zhuanlan.zhihu.com/api/columns/'.$column_id.'/posts/';
+		
+		if($limit == 0) $limit = 10;
+		
+	    $urlbase = 'http://zhuanlan.zhihu.com/api/columns/'.$column_id.'/posts/?limit='.strval($limit).'&offset='.strval($offset);
 		$ch  = curl_init($urlbase);
 		
 		$headers = array( 
